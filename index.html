@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Label Me</title>
+    <style>
+        
+        
+        *{
+            margin: 5px;
+        }
+        .clearfloat:after{
+            content: "";
+            display: block;
+            overflow: hidden;
+            height: 0;
+            visibility: hidden;
+            clear: both;
+        }
+
+        #uploadBlock{
+            width: 100%;
+        }
+        label,input{
+            display: inline-block;
+        }
+
+        
+        .mainView{
+            float: left;
+            height: 500px;
+            width: 500px;
+        }
+
+        .thumbs{
+            float: right;
+            width: 200px;
+            border: 2px dotted rgb(155, 133, 234);
+        }
+        .thumb{ 
+            margin: 0 auto;
+            padding: 10px;
+            height: 100px;
+            width: 100px;
+            display: block;
+        }
+        .textAlineCenter{
+            text-align: center;
+        }
+        #svgPolygon{
+            position: absolute;
+            padding: 0;
+            width: 0;
+            height: 0;
+            border: 0;
+            margin: 0;
+        }
+        #svgPolygon polygon{
+            fill: rgba(20,300,100,0.3);
+            stroke:blue;
+            stroke-width:1;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="clearfloat">
+        <div id="uploadBlock" class="clearfloat">
+            <!--上传
+            <label for="choice"> Open the target image here！</label>
+            -->
+            <input type="file" id="uploadImage" name="choice" accept="image/*" multiple="multiple">
+        </div>
+            <!--显示缩略图-->
+        <div id = "bigView" class="mainView">
+            <img src="" alt="Under Proccess">
+        </div>
+        <svg id="svgPolygon">
+            <polygon points=""/>
+        </svg>
+        <div id = "showList" class="thumbs">
+            <div class="textAlineCenter">Thumb Images List</div>
+        </div>
+    </div>
+    <input id="outJson" type="button" value="输出json">
+    <input id="outXML" type="button" value="输出xml">
+    <input id="outMask" type="button" value="输出mask">
+    
+
+</body>
+<script>
+    var selectImages  = document.getElementById("uploadImage");
+    selectImages.addEventListener("change", freshImageList);
+    var showList = document.getElementById("showList");
+    var largeImg = document.querySelector("#bigView img");
+    var svg = document.querySelector("#svgPolygon");
+    svg.style.left = largeImg.offsetLeft;
+    svg.style.top = largeImg.offsetTop;
+    var clickPolygon = "";
+    var outMask = document.querySelector("#outMask");
+    svg.onmousedown = function(e){
+        var x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        var y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+        console.log(x,y);
+        if(e.button==0){
+            
+            clickPolygon += (x-parseFloat(svg.style.left))+","+(y-parseFloat(svg.style.top))+" ";
+        }
+        if(e.button==2){
+            clickPolygon="";
+        }
+        document.querySelector("#svgPolygon polygon").setAttribute("points",clickPolygon);
+        
+    }
+    function freshImageList(){
+        for(let i in selectImages.files){
+            (function(n){
+                var x = document.createElement("img");
+                var reader = new FileReader();
+                reader.readAsDataURL(selectImages.files[n]);
+                showList.appendChild(x);
+                reader.onloadend = function(){
+                    x.src = reader.result;
+                    x.className = "thumb";
+                    x.ondblclick = function(){
+                        largeImg.src = x.src;
+                        largeImg.realHeight = largeImg.height;
+                        largeImg.realWidth = largeImg.width;
+                        largeImg.displayRate = parseFloat(largeImg.realHeight)/800;
+                        largeImg.style.width = "800px"; 
+                        svg.style.height = largeImg.height;
+                        svg.style.width = largeImg.width;
+                    }
+                };
+                
+            })(i);
+        }
+    }
+    function MakeMask(){
+        
+    }
+    
+    
+
+</script>
+</html>
