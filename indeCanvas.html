@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Label Me</title>
+
     <style>
-        
-        
-        
         .clearfloat:after{
             content: "";
             display: block;
@@ -57,8 +55,6 @@
         #canvasPolygon{
             position: absolute;
             padding: 0;
-            width: 0;
-            height: 0;
             border: 0;
             margin: 0;
         }
@@ -89,6 +85,8 @@
     
 
 </body>
+<script src="Canvas2Image.js">
+</script>
 <script>
     var realHeight = "";
     var realWidth = "";
@@ -100,21 +98,36 @@
     var canvas = document.querySelector("#canvasPolygon");
     canvas.style.left = largeImg.offsetLeft+"px";
     canvas.style.top = largeImg.offsetTop+"px";
-    console.log(largeImg.offsetLeft,largeImg.offsetTop);
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(20,300,100,0.3)';
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
+    var ctx = canvas.getContext("2d");
+    var path = [];
     canvas.onmousedown = function(e){
         var x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
         var y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-        console.log(x,y);
         if(e.button==0){
-            ctx.lineTo((x-parseFloat(canvas.style.left)),(y-parseFloat(canvas.style.top)));
+            path.push(parseFloat(x-parseFloat(canvas.style.left)),parseFloat(y-parseFloat(canvas.style.top)));
+            canvasDraw(path,ctx);
         }
         if(e.button==2){
+            path = [];
             canvas.height=canvas.height;
+        }
+    }
+    function canvasDraw(path, ctx){
+        if(path.length<4) return;
+        ctx.beginPath();
+        ctx.moveTo(path[0],path[1]);
+        for(let i=2;i<path.length;i+=2){
+            if(Math.abs(path[i]-path[0])+Math.abs(path[i+1]-path[1])<8)
+            {
+                ctx.lineTo(path[0],path[1]);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.fill(); 
+                Canvas2Image.saveAsImage(canvas,realWidth,realHeight,"png","image1");
+                break;
+            }
+            ctx.lineTo(path[i],path[i+1]);
+            ctx.stroke();       
         }
     }
     function freshImageList(){
@@ -132,11 +145,15 @@
                         realHeight = largeImg.height;
                         realWidth = largeImg.width;
                         Rate = parseFloat(realWidth)/800;
-                        largeImg.style.width = canvas.style.width = "800px"; 
-                        largeImg.style.height = canvas.style.height = parseFloat(realHeight)/Rate+"px";
+                        largeImg.style.width = "800px"; 
+                        largeImg.style.height = parseFloat(realHeight)/Rate+"px";
+                        canvas.height = parseFloat(realHeight)/Rate;
+                        canvas.width = 800;
+                        ctx.fillStyle = 'rgba(20,300,100,0.3)';
+                        ctx.strokeStyle = 'blue';
+                        ctx.lineWidth = 1;      
                     }
-                };
-                
+                };  
             })(i);
         }
     }
