@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <title>Label Me</title>
 
     <style>
-        .clearfloat:after{
+        .clearfloat:after {
             content: "";
             display: block;
             overflow: hidden;
@@ -16,43 +17,46 @@
             clear: both;
         }
 
-        #uploadBlock{
+        #uploadBlock {
             width: 100%;
         }
-        label,input{
+
+        label,
+        input {
             margin: 5px;
             display: inline-block;
         }
 
-        
-        .mainView{
+        .mainView {
             margin: 0;
             padding: 0;
             float: left;
-            height: 500px;
-            width: 500px;
-        }
-        .mainView image{
-            margin:0;
-            padding:0;
         }
 
-        .thumbs{
+        .mainView image {
+            margin: 0;
+            padding: 0;
+        }
+
+        .thumbs {
             float: right;
             width: 200px;
             border: 2px dotted rgb(155, 133, 234);
         }
-        .thumb{ 
+
+        .thumb {
             margin: 0 auto;
             padding: 10px;
             height: 100px;
             width: 100px;
             display: block;
         }
-        .textAlineCenter{
+
+        .textAlineCenter {
             text-align: center;
         }
-        #canvasPolygon{
+
+        #canvasPolygon {
             position: absolute;
             padding: 0;
             border: 0;
@@ -60,8 +64,9 @@
         }
     </style>
 </head>
+
 <body>
-    
+
     <div class="clearfloat">
         <div id="uploadBlock" class="clearfloat">
             <!--上传
@@ -69,20 +74,20 @@
             -->
             <input type="file" id="uploadImage" name="choice" accept="image/*" multiple="multiple">
         </div>
-            <!--显示缩略图-->
-        <div id = "bigView" class="mainView">
-            <img id="image"src="" alt="Under Proccess" realHeight="" realWidth="">
+        <!--显示缩略图-->
+        <div id="bigView" class="mainView">
+            <img id="image" src="" alt="Under Proccess" realHeight="" realWidth="">
         </div>
         <canvas id="canvasPolygon">
         </canvas>
-        <div id = "showList" class="thumbs">
+        <div id="showList" class="thumbs">
             <div class="textAlineCenter">Thumb Images List</div>
         </div>
     </div>
     <input id="outJson" type="button" value="输出json">
     <input id="outXML" type="button" value="输出xml">
     <input id="outMask" type="button" value="输出mask">
-    
+
 
 </body>
 <script src="Canvas2Image.js">
@@ -91,75 +96,97 @@
     var realHeight = "";
     var realWidth = "";
     var Rate = 0;
-    var selectImages  = document.getElementById("uploadImage");
+    var selectImages = document.getElementById("uploadImage");
     selectImages.addEventListener("change", freshImageList);
     var showList = document.getElementById("showList");
+
     var largeImg = document.querySelector("#bigView img");
+
     var canvas = document.querySelector("#canvasPolygon");
-    canvas.style.left = largeImg.offsetLeft+"px";
-    canvas.style.top = largeImg.offsetTop+"px";
+    canvas.style.left = largeImg.offsetLeft + "px";
+    canvas.style.top = largeImg.offsetTop + "px";
+    canvas.addEventListener("mousedown", inputPolygon)
     var ctx = canvas.getContext("2d");
     var path = [];
-    canvas.onmousedown = function(e){
+    var buttonOutMask = document.getElementById("outMask");
+    buttonOutMask.addEventListener("mousedown", outputMask);
+    console.log(buttonOutMask);
+    var buttonOutXML = document.getElementById("outXML");
+    buttonOutXML.addEventListener("mousedown", outputXML);
+
+    var buttonOutJson = document.getElementById("outJson");
+    buttonOutJson.addEventListener("mousedown", outputJson);
+
+    function inputPolygon(e) {
         var x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
         var y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-        if(e.button==0){
-            path.push(parseFloat(x-parseFloat(canvas.style.left)),parseFloat(y-parseFloat(canvas.style.top)));
-            canvasDraw(path,ctx);
+        if (e.button == 0) {
+            path.push(parseFloat(x - parseFloat(canvas.style.left)), parseFloat(y - parseFloat(canvas.style.top)));
+            canvasDraw(path, ctx);
         }
-        if(e.button==2){
+        if (e.button == 2) {
             path = [];
-            canvas.height=canvas.height;
+            canvas.height = canvas.height;
         }
     }
-    function canvasDraw(path, ctx){
-        if(path.length<4) return;
+
+    function outputMask() {
+        console.log("outputImage");
+        Canvas2Image.saveAsImage(canvas, realWidth, realHeight, "png", "image");
+    }
+
+    function outputXML() {
+        Canvas2XML(canvas);
+    }
+
+    function outputJson() {
+        Canvas2Json(canvas);
+    }
+
+    function canvasDraw(path, ctx) {
+        if (path.length < 4) return;
         ctx.beginPath();
-        ctx.moveTo(path[0],path[1]);
-        for(let i=2;i<path.length;i+=2){
-            if(Math.abs(path[i]-path[0])+Math.abs(path[i+1]-path[1])<8)
-            {
-                ctx.lineTo(path[0],path[1]);
+        ctx.moveTo(path[0], path[1]);
+        for (let i = 2; i < path.length; i += 2) {
+            if (Math.abs(path[i] - path[0]) + Math.abs(path[i + 1] - path[1]) < 8) {
+                ctx.lineTo(path[0], path[1]);
                 ctx.closePath();
                 ctx.stroke();
-                ctx.fill(); 
-                Canvas2Image.saveAsImage(canvas,realWidth,realHeight,"png","image1");
+                ctx.fill();
                 break;
             }
-            ctx.lineTo(path[i],path[i+1]);
-            ctx.stroke();       
+            ctx.lineTo(path[i], path[i + 1]);
+            ctx.stroke();
         }
     }
-    function freshImageList(){
-        for(let i in selectImages.files){
-            (function(n){
+
+    function freshImageList() {
+        for (let i in selectImages.files) {
+            (function (n) {
                 var x = document.createElement("img");
                 var reader = new FileReader();
                 reader.readAsDataURL(selectImages.files[n]);
                 showList.appendChild(x);
-                reader.onloadend = function(){
+                reader.onloadend = function () {
                     x.src = reader.result;
                     x.className = "thumb";
-                    x.ondblclick = function(){
+                    x.ondblclick = function () {
                         largeImg.src = x.src;
                         realHeight = largeImg.height;
                         realWidth = largeImg.width;
-                        Rate = parseFloat(realWidth)/800;
-                        largeImg.style.width = "800px"; 
-                        largeImg.style.height = parseFloat(realHeight)/Rate+"px";
-                        canvas.height = parseFloat(realHeight)/Rate;
+                        Rate = parseFloat(realWidth) / 800;
+                        largeImg.style.width = "800px";
+                        largeImg.style.height = parseFloat(realHeight) / Rate + "px";
+                        canvas.height = parseFloat(realHeight) / Rate;
                         canvas.width = 800;
                         ctx.fillStyle = 'rgba(20,300,100,0.3)';
                         ctx.strokeStyle = 'blue';
-                        ctx.lineWidth = 1;      
+                        ctx.lineWidth = 1;
                     }
-                };  
+                };
             })(i);
         }
     }
-    
-    
-    
-
 </script>
+
 </html>
