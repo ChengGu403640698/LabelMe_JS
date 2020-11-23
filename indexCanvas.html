@@ -85,11 +85,13 @@
         </div>
     </div>
     <input id="outJson" type="button" value="输出json">
-    <input id="outXML" type="button" value="输出xml">
+    
     <input id="outMask" type="button" value="输出mask">
 
 
 </body>
+
+<script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js"></script>
 <script src="Canvas2Image.js">
 </script>
 <script>
@@ -110,10 +112,6 @@
     var path = [];
     var buttonOutMask = document.getElementById("outMask");
     buttonOutMask.addEventListener("mousedown", outputMask);
-    console.log(buttonOutMask);
-    var buttonOutXML = document.getElementById("outXML");
-    buttonOutXML.addEventListener("mousedown", outputXML);
-
     var buttonOutJson = document.getElementById("outJson");
     buttonOutJson.addEventListener("mousedown", outputJson);
 
@@ -131,18 +129,40 @@
     }
 
     function outputMask() {
-        console.log("outputImage");
         Canvas2Image.saveAsImage(canvas, realWidth, realHeight, "png", "image");
-    }
-
-    function outputXML() {
-        Canvas2XML(canvas);
     }
 
     function outputJson() {
         Canvas2Json(canvas);
     }
-
+    function Canvas2Json(canvas){
+        var output = {
+            "version": "3.16.2",
+            "flags": {},
+            "shapes": [],
+            "lineColor": [0,255,0,128],// 
+            "fillColor": [255,0,0,128],// 
+            "imagePath": "0.png",
+            "imageData": largeImg.src.substr(largeImg.src.indexOf(',')+1),
+            "imageHeight": realHeight,
+            "imageWidth": realWidth
+            };
+        var polygon =  {
+            "label": "obj",
+            "line_color": null,
+            "fill_color": null,
+            "points":[],
+            "shape_type": "polygon",
+            "flags": {}
+        };
+        for(let i=0;i<path.length;i+=2){
+            polygon.points.push([path[i]*Rate,path[i+1]*Rate]);
+        }
+        output.shapes.push(polygon);
+        var outJson = JSON.stringify(output);
+        var blob = new Blob([outJson],{type:"text/plain;charset=utf-8"});
+        saveAs(blob,"save.json");
+    }
     function canvasDraw(path, ctx) {
         if (path.length < 4) return;
         ctx.beginPath();
@@ -190,3 +210,4 @@
 </script>
 
 </html>
+
