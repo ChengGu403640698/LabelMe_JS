@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Label Me</title>
+    <script src="Canvas2Image.js" async></script>
+    <style>
+        #thumbList{
+                border: 2px dotted lightblue;
+                width: 230px;
+                padding: 10px;
+            }
+        @media screen  and (min-width: 1000px) {
+            #thumbList{
+                position:fixed;
+                top:100px;
+                right: 100px;
+            }
+        }
+        @media screen  and (max-width: 1000px) {
+            #thumbList{
+                position: relative;
+                left: 200px;
+            }
+        }
+        .thumbImage{
+            margin: 10px;
+            width: 200px;
+        }
+        #main{
+            position: relative;
+        }
+        #mainView{
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 600px;
+        }
+        canvas{
+            top: 0;
+            left: 0;
+            position: absolute;
+            width: 600px;
+        }
+        #outputButtoms{
+            position:fixed;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" multiple type="image/" id="uploadImages">
+    <div id="thumbList"></div>
+    <div id="main">
+        <img id="mainView" ></img>
+        <canvas></canvas>
+    </div>
+    
+    <div id="outputButtoms">
+        <button onClick="outputMask()">输出为png</button>
+        <button onClick="outputJson()">输出为json</button>
+    </div>
+    <script>
+        let path = [];
+        let realWidth;
+        let realHeight;
+        let selections = document.querySelector('#uploadImages');
+        let thumbList = document.querySelector('#thumbList');
+        let mainView = document.querySelector('#mainView');
+        let mycanvas = document.querySelector('canvas');
+        let ctx = mycanvas.getContext("2d");
+        let outputButtoms = document.querySelector("#outputButtoms");
+
+        init();
+
+        function init(){
+            selections.addEventListener("change",freshThumbList);
+            mycanvas.addEventListener("mousedown",drawMask);
+            mycanvas.width = 600;
+        }
+        function freshThumbList(){
+            for(let item of selections.files){
+                LoadThumbImageSrc(item).then(src=>{
+                    let img = document.createElement("img");
+                    img.src = src;
+                    realHeight = img.height;
+                    realWidth = img.width;
+                    img.className = 'thumbImage';
+                    img.addEventListener("dblclick",selectedAsTarget);
+                    thumbList.append(img);
+                }).catch(reason=>{console.log("图片加载失败")});
+            } 
+        }
+        function LoadThumbImageSrc(file){
+            return new Promise((res,rej)=>{
+                let reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = ()=>{
+                    res(reader.result);
+                }
+                reader.onerror = ()=>{
+                    rej("加载失败");
+                }
+            })
+        }
+        function selectedAsTarget(event){
+            let target = event.target;
+            mainView.src = target.src;
+            mycanvas.height = ''+parseFloat(mainView.height);
+        }
+        function drawMask(e){
+            var x = e.layerX||e.offsetX;
+            var y = e.layerY||e.offsetY;
+            if (e.button == 0) {
+                path.push(x,y);
+                canvasDraw();
+            }
+            if (e.button == 2) {
+                path = [];
+            }
+        }
+        function canvasDraw() {
+            if (path.length < 4) return;
+            ctx.fillStyle = 'rgba(20,300,100,0.3)';
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(path[0], path[1]);
+            for (let i = 2; i < path.length; i += 2) {
+                if (Math.abs(path[i] - path[0]) + Math.abs(path[i + 1] - path[1]) < 8) {
+                    ctx.lineTo(path[0], path[1]);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fill();
+                    break;
+                }
+                ctx.lineTo(path[i], path[i + 1]);
+                ctx.stroke();
+            }
+    }
+        function outputMask() {
+            console.log("outputImage");
+            Canvas2Image.saveAsImage(mycanvas, realWidth, realHeight, "png", "image");
+        }
+        function outputJson() {
+            console.dir(mycanvas);
+            // Canvas2Json(mycanvas);
+        }
+
+    </script>
+</body>
+</html>
