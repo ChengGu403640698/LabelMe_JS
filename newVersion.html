@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Label Me</title>
+    <script src="https://cdn.bootcss.com/FileSaver.js/2014-11-29/FileSaver.js" async></script>
     <script src="Canvas2Image.js" async></script>
     <style>
         #thumbList{
@@ -146,9 +147,36 @@
         }
         function outputJson() {
             console.dir(mycanvas);
-            // Canvas2Json(mycanvas);
+            Canvas2Json(mycanvas);
         }
-
+        function Canvas2Json(canvas){
+            var output = {
+                "version": "3.16.2",
+                "flags": {},
+                "shapes": [],
+                "lineColor": [0,255,0,128],// 
+                "fillColor": [255,0,0,128],// 
+                "imagePath": "0.png",
+                "imageData": mainView.src.substr(mainView.src.indexOf(',')+1),
+                "imageHeight": realHeight,
+                "imageWidth": realWidth
+                };
+            var polygon =  {
+                "label": "obj",
+                "line_color": null,
+                "fill_color": null,
+                "points":[],
+                "shape_type": "polygon",
+                "flags": {}
+            };
+            for(let i=0;i<path.length;i+=2){
+                polygon.points.push([path[i]*realWidth/600,path[i+1]*realWidth/600]);
+            }
+            output.shapes.push(polygon);
+            var outJson = JSON.stringify(output);
+            var blob = new Blob([outJson],{type:"text/plain;charset=utf-8"});
+            saveAs(blob,"save.json");
+        }
     </script>
 </body>
 </html>
