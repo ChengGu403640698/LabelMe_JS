@@ -1,4 +1,6 @@
-# LabelMe_JS
+# LabelMe_JS 
+预览地址: https://chenggu403640698.github.io/LabelMe_JS/newVersion.html
+
 1. 项目功能
 * 实现多图上传后预览（右侧预览去区域），媒体查询，当窗口尺寸较小的时候预览区至屏幕上侧
 * 双击预览区中某一图片则选中至主要视图区
