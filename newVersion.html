@@ -86,8 +86,6 @@
                 LoadThumbImageSrc(item).then(src=>{
                     let img = document.createElement("img");
                     img.src = src;
-                    realHeight = img.height;
-                    realWidth = img.width;
                     img.className = 'thumbImage';
                     img.addEventListener("dblclick",selectedAsTarget);
                     thumbList.append(img);
@@ -109,6 +107,8 @@
         function selectedAsTarget(event){
             let target = event.target;
             mainView.src = target.src;
+            realHeight = target.naturalHeight;
+            realWidth = target.naturalWidth;
             mycanvas.height = ''+parseFloat(mainView.height);
         }
         function drawMask(e){
@@ -142,11 +142,12 @@
             }
     }
         function outputMask() {
-            console.log("outputImage");
+            console.dir(mycanvas);
+            console.log(realWidth);
+            console.log(realHeight);
             Canvas2Image.saveAsImage(mycanvas, realWidth, realHeight, "png", "image");
         }
         function outputJson() {
-            console.dir(mycanvas);
             Canvas2Json(mycanvas);
         }
         function Canvas2Json(canvas){
